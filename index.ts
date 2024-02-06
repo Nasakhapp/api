@@ -14,15 +14,17 @@ dotenv.config();
 const app = express();
 
 app.use(cors({ credentials: true, origin: true }));
-
+app.use(express.json());
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
 
-const socketServer = new socketio.Server(server, { cors: { origin: "*" } });
-
-app.use(express.json());
+const socketServer = new socketio.Server(server, {
+  cors: { origin: "*" },
+  serveClient: false,
+  path: "/socket",
+});
 
 socketServer.on("connection", (...params) => {
   console.log("connected");
