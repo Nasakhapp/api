@@ -13,17 +13,16 @@ COPY . .
 # Installing dependencies
 RUN yarn
 
-RUN npx prisma db push
-
-RUN npx prisma generate
-
 # Installing pm2 globally
 RUN yarn install pm2 -g
+
 
 # Installing pm2 globally
 RUN yarn build
 
 # Starting our application
-CMD pm2 start process.yml && tail -f /dev/null
+
 
 EXPOSE 4000
+
+CMD ["yarn", "start"]
