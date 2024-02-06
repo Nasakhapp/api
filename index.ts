@@ -20,9 +20,7 @@ app.use(express.json());
 
 const server = http.createServer(app);
 
-const socketServer = new socketio.Server(server, {
-  cors: { origin: "*" },
-});
+const socketServer = new socketio.Server(server);
 
 socketServer.on("connection", (...params) => {
   console.log("connected");
