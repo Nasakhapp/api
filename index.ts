@@ -89,12 +89,15 @@ app.get(
           status: true,
         },
       });
-      socketServer.emit("remove-nasakh", { id: updatedRequest.id });
-      socketServer.emit(updatedRequest.nasakh.id, {
+      socketServer.sockets.emit("remove-nasakh", { id: updatedRequest.id });
+      socketServer.sockets.emit(updatedRequest.nasakh.id, {
         request: updatedRequest,
         role: "NASAKH",
       });
-      socketServer.emit(userId, { request: updatedRequest, role: "NAJI" });
+      socketServer.sockets.emit(userId, {
+        request: updatedRequest,
+        role: "NAJI",
+      });
       res.json(updatedRequest);
     } else {
       res.status(403).send({
@@ -137,12 +140,12 @@ app.get(
         status: true,
       },
     });
-    socketServer.emit("add-nasakh", updatedRequest);
-    socketServer.emit(updatedRequest.nasakh.id, {
+    socketServer.sockets.emit("add-nasakh", updatedRequest);
+    socketServer.sockets.emit(updatedRequest.nasakh.id, {
       request: updatedRequest,
       role: "NASAKH",
     });
-    socketServer.emit(userId, {});
+    socketServer.sockets.emit(userId, {});
     res.json(updatedRequest);
   }
 );
@@ -180,9 +183,10 @@ app.get(
         status: true,
       },
     });
-    socketServer.emit("remove-nasakh", { id: updatedRequest.id });
-    socketServer.emit(userId, {});
-    if (updatedRequest.naji?.id) socketServer.emit(updatedRequest.naji?.id, {});
+    socketServer.sockets.emit("remove-nasakh", { id: updatedRequest.id });
+    socketServer.sockets.emit(userId, {});
+    if (updatedRequest.naji?.id)
+      socketServer.sockets.emit(updatedRequest.naji?.id, {});
     res.json(updatedRequest);
   }
 );
@@ -220,9 +224,10 @@ app.get(
         status: true,
       },
     });
-    socketServer.emit("remove-nasakh", { id: updatedRequest.id });
-    socketServer.emit(userId, {});
-    if (updatedRequest.naji?.id) socketServer.emit(updatedRequest.naji?.id, {});
+    socketServer.sockets.emit("remove-nasakh", { id: updatedRequest.id });
+    socketServer.sockets.emit(userId, {});
+    if (updatedRequest.naji?.id)
+      socketServer.sockets.emit(updatedRequest.naji?.id, {});
     res.json(updatedRequest);
   }
 );
@@ -267,8 +272,8 @@ app.post(
           status: true,
         },
       });
-      socketServer.emit("add-nasakh", request);
-      socketServer.emit(id, { request, role: "NASAKH" });
+      socketServer.sockets.emit("add-nasakh", request);
+      socketServer.sockets.emit(id, { request, role: "NASAKH" });
       res.json(request);
     } else res.status(403).send({ error: "چند تا درخواست میدی خیلی نسخیا!" });
   }
