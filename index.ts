@@ -13,17 +13,15 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ credentials: true, origin: true }));
+app.use(cors());
 app.use(express.json());
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
 
-const socketServer = new socketio.Server(server);
-
-socketServer.on("connection", (...params) => {
-  console.log("connected");
+const socketServer = new socketio.Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
 const Authorization = (
