@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String    @id @unique @default(cuid())
+  name                 String?
+  UserAsNasakhRequests Request[] @relation("nasakh")
+  UserAsNajiRequests   Request[] @relation("naji")
+}
+
+model Request {
+  id       String        @id @unique @default(cuid())
+  amount   Int
+  lat      Float
+  long     Float
+  nasakh   User          @relation(fields: [nasakhId], references: [id], name: "nasakh")
+  naji     User?         @relation(fields: [najiId], references: [id], name: "naji")
+  status   RequestStatus
+  nasakhId String
+  najiId   String?
+}
+
+model FirstName {
+  id   String @id @unique @default(cuid())
+  name String @unique
+}
+
+model LastName {
+  id   String @id @unique @default(cuid())
+  name String @unique
+}
+
+enum RequestStatus {
+  SEARCHING
+  BRINGING
+  DONE
+  CANCELED
+}
