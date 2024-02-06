@@ -1,4 +1,4 @@
 apps:
   - script: ./dist/index.js
-    instances: 4
+    instances: 3
     exec_mode: cluster
