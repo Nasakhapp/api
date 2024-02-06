@@ -14,7 +14,7 @@ COPY . .
 RUN yarn
 
 # Installing pm2 globally
-RUN yarn install pm2 -g
+RUN yarn global add pm2
 
 
 # Installing pm2 globally
