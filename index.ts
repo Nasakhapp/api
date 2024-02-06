@@ -23,7 +23,7 @@ const server = http.createServer(app);
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
   serveClient: false,
-  path: "/socket",
+  transports: ["websocket"],
 });
 
 socketServer.on("connection", (...params) => {
