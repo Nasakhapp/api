@@ -1,5 +1,5 @@
 # Fetching the minified node image on apline linux
-FROM node:slim
+FROM node:20
 
 # Declaring env
 ENV NODE_ENV production
