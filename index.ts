@@ -27,8 +27,10 @@ const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
 });
 
-socketServer.on("naji-location", (data) => {
-  socketServer.emit(data.requestId, data.location);
+socketServer.on("connection", (socket) => {
+  socket.on("naji-location", (data) => {
+    socketServer.emit(data.requestId, data.location);
+  });
 });
 
 const Authorization = (
