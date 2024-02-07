@@ -19,6 +19,9 @@ app.use(express.json());
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
+server.listen(4000, () => {
+  console.log("Localhost running on 4000");
+});
 
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
@@ -458,6 +461,3 @@ app.get(
     res.json(user);
   }
 );
-server.listen(4000, () => {
-  console.log("Localhost running on 4000");
-});
