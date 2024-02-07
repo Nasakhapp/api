@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "npx tsc",
-    "start": "yarn prisma:push && yarn prisma:generate && ts-node seed.ts &&pm2 start process.yml && tail -f /dev/null",
+    "start": "yarn prisma:push && yarn prisma:generate && ts-node seed.ts && node /dist/index.js",
     "dev": "nodemon index.ts",
     "prisma:push": "npx prisma db push",
     "prisma:generate": "npx prisma generate"

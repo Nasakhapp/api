@@ -16,10 +16,6 @@ RUN yarn
 RUN yarn add -D @types/jsonwebtoken @types/express
 
 # Installing pm2 globally
-RUN yarn global add pm2
-
-
-# Installing pm2 globally
 RUN yarn build
 
 # Starting our application
