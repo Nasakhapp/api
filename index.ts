@@ -13,15 +13,12 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
-server.listen(4000, () => {
-  console.log("Localhost running on 4000");
-});
 
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
@@ -461,3 +458,6 @@ app.get(
     res.json(user);
   }
 );
+server.listen(4000, () => {
+  console.log("Localhost running on 4000");
+});
