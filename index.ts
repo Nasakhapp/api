@@ -27,6 +27,10 @@ const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
 });
 
+socketServer.on("naji-location", (data) => {
+  socketServer.emit(data.requestId, data.location);
+});
+
 const Authorization = (
   req: express.Request,
   res: express.Response,
@@ -88,7 +92,6 @@ app.get(
           status: true,
         },
       });
-
       socketServer.emit("remove-nasakh", { id: updatedRequest.id });
       socketServer.emit(updatedRequest.nasakh.id, {
         request: updatedRequest,
