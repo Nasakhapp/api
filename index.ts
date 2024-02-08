@@ -8,10 +8,13 @@ import fs from "fs";
 import tls from "tls";
 
 import dotenv from "dotenv";
+import Expo from "expo-server-sdk";
 
 dotenv.config();
 
 const app = express();
+
+const expo = new Expo();
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
@@ -89,6 +92,7 @@ app.get(
             select: {
               id: true,
               name: true,
+              pushToken: true,
             },
           },
           status: true,
@@ -103,6 +107,15 @@ app.get(
         request: updatedRequest,
         role: "NAJI",
       });
+      if (updatedRequest.nasakh.pushToken)
+        expo.sendPushNotificationsAsync([
+          {
+            to: updatedRequest.nasakh.pushToken,
+            title: "ناجی پیدا شد",
+            body: `${updatedRequest.naji?.name} میاد که از نسخی نجاتت بده`,
+            channelId: "default",
+          },
+        ]);
 
       res.json(updatedRequest);
     } else {
@@ -141,6 +154,7 @@ app.get(
           select: {
             id: true,
             name: true,
+            pushToken: true,
           },
         },
         status: true,
@@ -153,7 +167,15 @@ app.get(
       role: "NASAKH",
     });
     socketServer.emit(userId, {});
-
+    if (updatedRequest.nasakh.pushToken)
+      expo.sendPushNotificationsAsync([
+        {
+          to: updatedRequest.nasakh.pushToken,
+          title: "لاشی لغو کرد",
+          body: `فدا سرت یکی دیگه برات پیدا میکنم`,
+          channelId: "default",
+        },
+      ]);
     res.json(updatedRequest);
   }
 );
@@ -180,12 +202,14 @@ app.get(
           select: {
             id: true,
             name: true,
+            pushToken: true,
           },
         },
         nasakh: {
           select: {
             id: true,
             name: true,
+            pushToken: true,
           },
         },
         status: true,
@@ -195,7 +219,24 @@ app.get(
     socketServer.emit("remove-nasakh", { id: updatedRequest.id });
     socketServer.emit(userId, {});
     if (updatedRequest.naji?.id) socketServer.emit(updatedRequest.naji?.id, {});
-
+    if (updatedRequest.nasakh.pushToken)
+      expo.sendPushNotificationsAsync([
+        {
+          to: updatedRequest.nasakh.pushToken,
+          title: "دیگه نسخ نیستی",
+          body: `نوش جونت امیدوارم هیچ وقت نسخ نباشی`,
+          channelId: "default",
+        },
+      ]);
+    if (updatedRequest.naji?.pushToken)
+      expo.sendPushNotificationsAsync([
+        {
+          to: updatedRequest.naji.pushToken,
+          title: "دست گلت درد نکنه",
+          body: `یکی رو از نسخی نجات دادی دمت گرم`,
+          channelId: "default",
+        },
+      ]);
     res.json(updatedRequest);
   }
 );
@@ -222,6 +263,7 @@ app.get(
           select: {
             id: true,
             name: true,
+            pushToken: true,
           },
         },
         nasakh: {
@@ -236,6 +278,15 @@ app.get(
     socketServer.emit("remove-nasakh", { id: updatedRequest.id });
     socketServer.emit(userId, {});
     if (updatedRequest.naji?.id) socketServer.emit(updatedRequest.naji?.id, {});
+    if (updatedRequest.naji?.pushToken)
+      expo.sendPushNotificationsAsync([
+        {
+          to: updatedRequest.naji.pushToken,
+          title: "نسخمون لغو کرد",
+          body: `فک کنم دیگه نسخ نیست رسوندن بهش`,
+          channelId: "default",
+        },
+      ]);
     res.json(updatedRequest);
   }
 );
@@ -402,6 +453,17 @@ app.get("/new-user", async (req: express.Request, res: express.Response) => {
   });
   res.json({ ...user, token });
 });
+
+app.patch(
+  "/push-token",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    const id = res.locals.userId;
+    const { pushToken } = req.body;
+    await prisma.user.update({ where: { id }, data: { pushToken } });
+    res.json("done");
+  }
+);
 
 app.get(
   "/me",
