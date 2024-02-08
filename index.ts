@@ -18,6 +18,7 @@ const expo = new Expo();
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(express.static("public"));
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
