@@ -1,5 +1,5 @@
 import express from "express";
-import https from "https";
+import http from "http";
 import socketio from "socket.io";
 import prisma from "./db/prisma";
 import jwt from "jsonwebtoken";
@@ -16,18 +16,13 @@ const app = express();
 
 const expo = new Expo();
 
-const privateKey = fs.readFileSync("certs/private.key", "utf8");
-const certificate = fs.readFileSync("certs/certificate.crt", "utf8");
-const ca = fs.readFileSync("certs/ca_bundle.crt", "utf8");
-const credentials = { key: privateKey, cert: certificate, ca };
-
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static("public"));
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
-const server = https.createServer(credentials, app);
+const server = http.createServer(app);
 server.listen(4000, () => {
   console.log("Localhost running on 4000");
 });
