@@ -18,6 +18,7 @@ const expo = new Expo();
 
 const privateKey = fs.readFileSync("certs/ssl.key", "utf8");
 const certificate = fs.readFileSync("certs/ssl.crt", "utf8");
+const ca = fs.readFileSync("certs/ssl.ca", "utf8");
 const credentials = { key: privateKey, cert: certificate };
 
 app.use(cors({ origin: true, credentials: true }));
@@ -26,7 +27,7 @@ app.use(express.static("public"));
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
-const server = https.createServer(credentials, app);
+const server = https.createServer({ ...credentials, ca }, app);
 server.listen(4000, () => {
   console.log("Localhost running on 4000");
 });
