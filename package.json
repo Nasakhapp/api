@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.9.1",
+    "@tma.js/init-data-node": "^1.2.8",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "expo-server-sdk": "^3.7.0",

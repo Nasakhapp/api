@@ -10,6 +10,7 @@ import crypto from "crypto";
 
 import dotenv from "dotenv";
 import Expo from "expo-server-sdk";
+import { parse, validate } from "@tma.js/init-data-node";
 
 dotenv.config();
 
@@ -602,84 +603,24 @@ export function telegramAuthMiddleware(
   next: express.NextFunction
 ) {
   // take initData from headers
-  const iniData = req.headers["telegram-data"];
+  const initData = req.headers["telegram-data"];
   // use our helpers (see bellow) to validate string
   // and get user from it
-  const user = checkAuthorization(iniData);
-
-  // add uses to  the request "context" for the future
-  if (user) {
-    res.locals.telegramUserId = user.id;
-    next();
-    // or if the validation is failed response 401
-  } else {
+  try {
+    const parsedInitData = parse(initData);
+    validate(parsedInitData, TELEGRAM_BOT_TOKEN);
+    const user = parsedInitData.user;
+    if (user) {
+      res.locals.telegramUserId = user.id;
+      next();
+    } else {
+      res.writeHead(401, { "content-type": "application/json" });
+      res.write("unauthorized");
+      res.end();
+    }
+  } catch (err) {
     res.writeHead(401, { "content-type": "application/json" });
     res.write("unauthorized");
     res.end();
   }
-}
-
-function parseAuthString(iniData: any) {
-  // parse string to get params
-  const searchParams = new URLSearchParams(iniData);
-
-  // take the hash and remove it from params list
-  const hash = searchParams.get("hash");
-  searchParams.delete("hash");
-
-  // sort params
-  const restKeys = Array.from(searchParams.entries());
-  restKeys.sort(([aKey, aValue], [bKey, bValue]) => aKey.localeCompare(bKey));
-
-  // and join it with \n
-  const dataCheckString = restKeys.map(([n, v]) => `${n}=${v}`).join("\n");
-
-  return {
-    dataCheckString,
-    hash,
-    // get metaData from params
-    metaData: {
-      user: JSON.parse(searchParams.get("user") || ""),
-      auth_date: searchParams.get("auth_date"),
-      query_id: searchParams.get("query_id"),
-    },
-  };
-}
-
-// encoding message with key
-// we need two types of representation here: Buffer and Hex
-function encodeHmac(
-  message: crypto.BinaryLike,
-  key: crypto.BinaryLike | crypto.KeyObject,
-  repr: crypto.BinaryToTextEncoding | undefined
-) {
-  if (repr)
-    return crypto.createHmac("sha256", key).update(message).digest(repr);
-  return crypto.createHmac("sha256", key).update(message).digest();
-}
-
-function checkAuthorization(iniData: any) {
-  // parsing the iniData sting
-  const authTelegramData = parseAuthString(iniData);
-
-  // creating the secret key and keep it as a Buffer (important!)
-  const secretKey = encodeHmac(
-    TELEGRAM_BOT_TOKEN,
-    WEB_APP_DATA_CONST,
-    undefined
-  );
-
-  // creating the validation key (and transform it to HEX)
-  const validationKey = encodeHmac(
-    authTelegramData.dataCheckString,
-    secretKey,
-    "hex"
-  );
-
-  // the final step - comparing and returning
-  if (validationKey === authTelegramData.hash) {
-    return authTelegramData.metaData.user;
-  }
-
-  return null;
 }

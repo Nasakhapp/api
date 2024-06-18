@@ -156,6 +156,18 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.0.tgz#96116f2a912e0c02817345b3c10751069920d553"
   integrity sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==
 
+"@tma.js/init-data-node@^1.2.8":
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/@tma.js/init-data-node/-/init-data-node-1.2.8.tgz#edcc2c49e8df85f5bcf39781dc8d76d72d82ae56"
+  integrity sha512-gvP2fVTSYiYWJwEgvsGlIIKvhiVGeyqsxH6Epyg+i9599YlF26b2yepAxceUVjOpKsSdvykFUdo/OGOMVd+XOw==
+  dependencies:
+    "@tma.js/sdk" "^2.5.1"
+
+"@tma.js/sdk@^2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@tma.js/sdk/-/sdk-2.5.1.tgz#36c7b06f05a858476fb25ac7861a421f5fb907ea"
+  integrity sha512-uUFv3oINGRwkh4KbGxMq9OxDdSQOhH9O45i9i0aqen6pIakeiIxxzrF8Yhv2xSFWrn8V+gaOpr3IDrushlo5TA==
+
 "@tootallnate/quickjs-emscripten@^0.23.0":
   version "0.23.0"
   resolved "https://registry.yarnpkg.com/@tootallnate/quickjs-emscripten/-/quickjs-emscripten-0.23.0.tgz#db4ecfd499a9765ab24002c3b696d02e6d32a12c"
