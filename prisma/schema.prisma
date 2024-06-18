@@ -16,6 +16,7 @@ model User {
   UserAsNasakhRequests Request[] @relation("nasakh")
   UserAsNajiRequests   Request[] @relation("naji")
   pushToken            String?
+  telegramUserId       String?   @unique
 }
 
 model Request {

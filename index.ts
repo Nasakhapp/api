@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import fs from "fs";
 import tls from "tls";
+import crypto from "crypto";
 
 import dotenv from "dotenv";
 import Expo from "expo-server-sdk";
@@ -379,81 +380,144 @@ app.get(
   }
 );
 
-app.get("/new-user", async (req: express.Request, res: express.Response) => {
-  const firstNameCount = await prisma.firstName.count();
-  const lastNameCount = await prisma.lastName.count();
-  const skipFirstName = Math.max(
-    0,
-    Math.floor(Math.random() * firstNameCount) - 1
-  );
-  const skipLastName = Math.max(
-    0,
-    Math.floor(Math.random() * lastNameCount) - 1
-  );
-  const firstName = await prisma.firstName.findMany({
-    skip: skipFirstName,
-    take: 1,
-  });
-  const lastName = await prisma.lastName.findMany({
-    skip: skipLastName,
-    take: 1,
-  });
-  const user = await prisma.user.create({
-    data: { name: `${firstName[0].name} ${lastName[0].name}` },
-    select: {
-      id: true,
-      name: true,
-      UserAsNajiRequests: {
-        where: { status: "BRINGING" },
-        select: {
-          id: true,
-          amount: true,
-          lat: true,
-          long: true,
-          naji: {
-            select: {
-              id: true,
-              name: true,
+app.post(
+  "/token",
+  telegramAuthMiddleware,
+  async (req: express.Request, res: express.Response) => {
+    const telegramUserId = res.locals.telegramUserId;
+    const userExists = await prisma.user.findUnique({
+      where: { telegramUserId },
+      select: {
+        id: true,
+        name: true,
+        UserAsNajiRequests: {
+          where: { status: "BRINGING" },
+          select: {
+            id: true,
+            amount: true,
+            lat: true,
+            long: true,
+            naji: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
-          },
-          nasakh: {
-            select: {
-              id: true,
-              name: true,
+            nasakh: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
+            status: true,
           },
-          status: true,
+        },
+        UserAsNasakhRequests: {
+          where: { status: { in: ["BRINGING", "SEARCHING"] } },
+          select: {
+            id: true,
+            amount: true,
+            lat: true,
+            long: true,
+            naji: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            nasakh: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            status: true,
+          },
         },
       },
-      UserAsNasakhRequests: {
-        where: { status: { in: ["BRINGING", "SEARCHING"] } },
+    });
+    if (userExists) {
+      const token = jwt.sign({ id: userExists.id }, process.env.TOKEN_SECRET!, {
+        expiresIn: "365d",
+      });
+      res.json({ ...userExists, token });
+    } else {
+      const firstNameCount = await prisma.firstName.count();
+      const lastNameCount = await prisma.lastName.count();
+      const skipFirstName = Math.max(
+        0,
+        Math.floor(Math.random() * firstNameCount) - 1
+      );
+      const skipLastName = Math.max(
+        0,
+        Math.floor(Math.random() * lastNameCount) - 1
+      );
+      const firstName = await prisma.firstName.findMany({
+        skip: skipFirstName,
+        take: 1,
+      });
+      const lastName = await prisma.lastName.findMany({
+        skip: skipLastName,
+        take: 1,
+      });
+      const user = await prisma.user.create({
+        data: { name: `${firstName[0].name} ${lastName[0].name}` },
         select: {
           id: true,
-          amount: true,
-          lat: true,
-          long: true,
-          naji: {
+          name: true,
+          UserAsNajiRequests: {
+            where: { status: "BRINGING" },
             select: {
               id: true,
-              name: true,
+              amount: true,
+              lat: true,
+              long: true,
+              naji: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              nasakh: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              status: true,
             },
           },
-          nasakh: {
+          UserAsNasakhRequests: {
+            where: { status: { in: ["BRINGING", "SEARCHING"] } },
             select: {
               id: true,
-              name: true,
+              amount: true,
+              lat: true,
+              long: true,
+              naji: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              nasakh: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              status: true,
             },
           },
-          status: true,
         },
-      },
-    },
-  });
-  const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET!, {
-    expiresIn: "365d",
-  });
-  res.json({ ...user, token });
-});
+      });
+      const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET!, {
+        expiresIn: "365d",
+      });
+      res.json({ ...user, token });
+    }
+  }
+);
 
 app.patch(
   "/push-token",
@@ -525,3 +589,94 @@ app.get(
     res.json(user);
   }
 );
+
+const WEB_APP_DATA_CONST = "WebAppData";
+const TELEGRAM_BOT_TOKEN = "so secret token!!";
+
+export function telegramAuthMiddleware(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  // take initData from headers
+  const iniData = req.headers["telegram-data"];
+  // use our helpers (see bellow) to validate string
+  // and get user from it
+  const user = checkAuthorization(iniData);
+
+  // add uses to  the request "context" for the future
+  if (user) {
+    res.locals.telegramUserId = user.id;
+    next();
+    // or if the validation is failed response 401
+  } else {
+    res.writeHead(401, { "content-type": "application/json" });
+    res.write("unauthorized");
+    res.end();
+  }
+}
+
+function parseAuthString(iniData: any) {
+  // parse string to get params
+  const searchParams = new URLSearchParams(iniData);
+
+  // take the hash and remove it from params list
+  const hash = searchParams.get("hash");
+  searchParams.delete("hash");
+
+  // sort params
+  const restKeys = Array.from(searchParams.entries());
+  restKeys.sort(([aKey, aValue], [bKey, bValue]) => aKey.localeCompare(bKey));
+
+  // and join it with \n
+  const dataCheckString = restKeys.map(([n, v]) => `${n}=${v}`).join("\n");
+
+  return {
+    dataCheckString,
+    hash,
+    // get metaData from params
+    metaData: {
+      user: JSON.parse(searchParams.get("user") || ""),
+      auth_date: searchParams.get("auth_date"),
+      query_id: searchParams.get("query_id"),
+    },
+  };
+}
+
+// encoding message with key
+// we need two types of representation here: Buffer and Hex
+function encodeHmac(
+  message: crypto.BinaryLike,
+  key: crypto.BinaryLike | crypto.KeyObject,
+  repr: crypto.BinaryToTextEncoding | undefined
+) {
+  if (repr)
+    return crypto.createHmac("sha256", key).update(message).digest(repr);
+  return crypto.createHmac("sha256", key).update(message).digest();
+}
+
+function checkAuthorization(iniData: any) {
+  // parsing the iniData sting
+  const authTelegramData = parseAuthString(iniData);
+
+  // creating the secret key and keep it as a Buffer (important!)
+  const secretKey = encodeHmac(
+    TELEGRAM_BOT_TOKEN,
+    WEB_APP_DATA_CONST,
+    undefined
+  );
+
+  // creating the validation key (and transform it to HEX)
+  const validationKey = encodeHmac(
+    authTelegramData.dataCheckString,
+    secretKey,
+    "hex"
+  );
+
+  // the final step - comparing and returning
+  if (validationKey === authTelegramData.hash) {
+    return authTelegramData.metaData.user;
+  }
+
+  return null;
+}
