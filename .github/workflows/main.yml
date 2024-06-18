@@ -1,0 +1,38 @@
+name: Node.js CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create .env file
+        uses: ozaytsev86/create-env-file@v1
+        with:
+          ENV_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENV_TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+      - name: Send to server
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: .
+          remote: /root/nasakh-api/
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASS }}
+      - name: multiple command
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASS }}
+          port: 22
+          script: |
+            docker stop nasakh-api
+            docker remove nasakh-api
+            cd nasakh-api
+            docker build -t nasakh-api .
+            cd ..
+            docker run -d --name nasakh-api -p 4000:4000 nasakh-api
