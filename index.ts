@@ -461,7 +461,10 @@ app.post(
         take: 1,
       });
       const user = await prisma.user.create({
-        data: { name: `${firstName[0].name} ${lastName[0].name}` },
+        data: {
+          name: `${firstName[0].name} ${lastName[0].name}`,
+          telegramUserId,
+        },
         select: {
           id: true,
           name: true,
@@ -591,7 +594,7 @@ app.get(
 );
 
 const WEB_APP_DATA_CONST = "WebAppData";
-const TELEGRAM_BOT_TOKEN = "so secret token!!";
+const TELEGRAM_BOT_TOKEN = "7495100655:AAGqvHyW7uFRa1-cQ3mupJrkLRr750M7oU8";
 
 export function telegramAuthMiddleware(
   req: express.Request,
