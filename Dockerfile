@@ -13,8 +13,6 @@ COPY . .
 # Installing dependencies
 RUN yarn
 
-RUN yarn add -D @types/jsonwebtoken @types/express
-
 # Installing pm2 globally
 RUN yarn build
 
