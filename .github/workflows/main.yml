@@ -34,4 +34,4 @@ jobs:
             cd nasakh-api
             docker build -t nasakh-api .
             cd ..
-            docker run -d --name nasakh-api -p 4000:80 nasakh-api
+            docker run -d --name nasakh-api -p 4000:4000 nasakh-api
