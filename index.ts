@@ -566,7 +566,7 @@ export function telegramAuthMiddleware(
   try {
     const parsedInitData = parse(new URLSearchParams(initData));
     validate(parsedInitData, TELEGRAM_BOT_TOKEN);
-    const user = initData.user;
+    const user = parsedInitData.user;
     if (user) {
       res.locals.telegramUserId = user.id;
       next();
