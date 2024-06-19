@@ -577,6 +577,7 @@ export function telegramAuthMiddleware(
       res.end();
     }
   } catch (err) {
+    console.log(err);
     res.writeHead(401, { "content-type": "application/json" });
     res.write("unauthorized");
     res.end();
