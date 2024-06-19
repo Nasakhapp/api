@@ -563,9 +563,9 @@ export function telegramAuthMiddleware(
   );
   // use our helpers (see bellow) to validate string
   // and get user from it
-  console.log(initData);
+  const parsed = parse(initData);
   try {
-    validate(new URLSearchParams(initData), TELEGRAM_BOT_TOKEN, {
+    validate(parsed, TELEGRAM_BOT_TOKEN, {
       expiresIn: 3600,
     });
     const user = initData.user;
