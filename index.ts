@@ -558,7 +558,8 @@ export function telegramAuthMiddleware(
   next: express.NextFunction
 ) {
   // take initData from headers
-  const initData = req.headers["telegram-data"];
+  const initData = req.headers.authorization?.split(" ")?.[1];
+
   // use our helpers (see bellow) to validate string
   // and get user from it
   try {
