@@ -340,7 +340,7 @@ app.post(
   "/token",
   telegramAuthMiddleware,
   async (req: express.Request, res: express.Response) => {
-    const telegramUserId = res.locals.telegramUserId;
+    const telegramUserId = String(res.locals.telegramUserId);
     const userExists = await prisma.user.findUnique({
       where: { telegramUserId },
       select: {
