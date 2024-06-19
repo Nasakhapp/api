@@ -558,12 +558,14 @@ export function telegramAuthMiddleware(
   next: express.NextFunction
 ) {
   // take initData from headers
-  const initData = req.headers["telegram-data"];
+  const { initData } = JSON.parse(
+    (req.headers["telegram-data"] || "{}") as string
+  );
   // use our helpers (see bellow) to validate string
   // and get user from it
+  console.log(initData);
   try {
     const parsedInitData = parse(initData);
-
     validate(parsedInitData, TELEGRAM_BOT_TOKEN);
     const user = parsedInitData.user;
     if (user) {
