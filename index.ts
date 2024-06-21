@@ -568,9 +568,9 @@ app.put(
         where: { id },
         data: { walletAddress },
       });
-      res.sendStatus(200).json(updatedUser);
+      res.status(200).json(updatedUser);
     } else {
-      res.sendStatus(403).json(user);
+      res.status(403).json(user);
     }
   }
 );
