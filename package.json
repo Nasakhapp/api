@@ -6,13 +6,18 @@
   "scripts": {
     "build": "npx tsc",
     "start": "yarn prisma:push && yarn prisma:generate && ts-node seed.ts && node ./dist/index.js",
-    "dev": "nodemon index.ts",
+    "dev": "NODE_ENV=development nodemon index.ts",
     "prisma:push": "npx prisma db push",
     "prisma:generate": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.9.1",
     "@tma.js/init-data-node": "^1.2.8",
+    "@ton/core": "^0.56.3",
+    "@ton/crypto": "^3.2.0",
+    "@ton/ton": "^13.11.2",
+    "axios": "^1.7.2",
+    "buffer": "^6.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "expo-server-sdk": "^3.7.0",
@@ -20,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "pm2": "^5.3.1",
     "socket.io": "^4.7.4",
+    "tonweb": "^0.0.66",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

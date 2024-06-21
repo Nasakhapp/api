@@ -15,8 +15,8 @@ model User {
   name                 String?
   UserAsNasakhRequests Request[] @relation("nasakh")
   UserAsNajiRequests   Request[] @relation("naji")
-  pushToken            String?
   telegramUserId       String?   @unique
+  walletAddress        String?   @unique
 }
 
 model Request {

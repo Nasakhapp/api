@@ -4,16 +4,36 @@ import socketio from "socket.io";
 import prisma from "./db/prisma";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-import fs from "fs";
-import tls from "tls";
-import crypto from "crypto";
 
 import dotenv from "dotenv";
 import { parse, validate } from "@tma.js/init-data-node";
+import {
+  Address,
+  BitString,
+  Cell,
+  CellType,
+  fromNano,
+  JettonMaster,
+  JettonWallet,
+  openContract,
+  parseTuple,
+  TonClient,
+  WalletContractV4,
+} from "@ton/ton";
+
+import axios from "axios";
+import { Contract } from "tonweb/dist/types/contract/contract";
 
 dotenv.config();
 
+const TONCENTER_API_KEY =
+  "148a23f7c4228fb1d324bf59985cabf66d9f04adc4b9416ca7d45671bd9953a7";
+
 const app = express();
+const client = new TonClient({
+  endpoint: "https://toncenter.com/api/v2/jsonRPC",
+  apiKey: TONCENTER_API_KEY,
+});
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
@@ -53,12 +73,12 @@ const Authorization = (
       }
     });
   } else {
-    res.sendStatus(403);
+    res.sendStatus(401);
   }
 };
 
 app.get(
-  "/request/:requestId/accept",
+  "/nasakh/request/:requestId/accept",
   Authorization,
   async (
     req: express.Request<{ requestId: string }, {}, {}>,
@@ -92,7 +112,6 @@ app.get(
             select: {
               id: true,
               name: true,
-              pushToken: true,
             },
           },
           status: true,
@@ -118,7 +137,7 @@ app.get(
 );
 
 app.get(
-  "/request/:requestId/reject",
+  "/nasakh/request/:requestId/reject",
   Authorization,
   async (
     req: express.Request<{ requestId: string }, {}, {}>,
@@ -145,7 +164,6 @@ app.get(
           select: {
             id: true,
             name: true,
-            pushToken: true,
           },
         },
         status: true,
@@ -164,7 +182,7 @@ app.get(
 );
 
 app.get(
-  "/request/:requestId/done",
+  "/nasakh/request/:requestId/done",
   Authorization,
   async (
     req: express.Request<{ requestId: string }, {}, {}>,
@@ -185,14 +203,12 @@ app.get(
           select: {
             id: true,
             name: true,
-            pushToken: true,
           },
         },
         nasakh: {
           select: {
             id: true,
             name: true,
-            pushToken: true,
           },
         },
         status: true,
@@ -208,7 +224,7 @@ app.get(
 );
 
 app.get(
-  "/request/:requestId/cancel",
+  "/nasakh/request/:requestId/cancel",
   Authorization,
   async (
     req: express.Request<{ requestId: string }, {}, {}>,
@@ -229,7 +245,6 @@ app.get(
           select: {
             id: true,
             name: true,
-            pushToken: true,
           },
         },
         nasakh: {
@@ -250,7 +265,7 @@ app.get(
 );
 
 app.post(
-  "/nasakham",
+  "/nasakh/request",
   Authorization,
   async (
     req: express.Request<{}, {}, { amount: number; lat: number; long: number }>,
@@ -298,7 +313,7 @@ app.post(
 );
 
 app.get(
-  "/near-nasakhs",
+  "/nasakh/near",
   Authorization,
   async (
     req: express.Request<{}, {}, {}, { lat: string; long: string }>,
@@ -390,6 +405,7 @@ app.post(
             status: true,
           },
         },
+        walletAddress: true,
       },
     });
     if (userExists) {
@@ -468,6 +484,7 @@ app.post(
               status: true,
             },
           },
+          walletAddress: true,
         },
       });
       const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET!, {
@@ -475,17 +492,6 @@ app.post(
       });
       res.json({ ...user, token });
     }
-  }
-);
-
-app.patch(
-  "/push-token",
-  Authorization,
-  async (req: express.Request, res: express.Response) => {
-    const id = res.locals.userId;
-    const { pushToken } = req.body;
-    await prisma.user.update({ where: { id }, data: { pushToken } });
-    res.json("done");
   }
 );
 
@@ -543,13 +549,76 @@ app.get(
             status: true,
           },
         },
+        walletAddress: true,
       },
     });
     res.json(user);
   }
 );
 
-const WEB_APP_DATA_CONST = "WebAppData";
+app.put(
+  "/me/wallet-address",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    const id = res.locals.userId;
+    const walletAddress = req.body.walletAddress;
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user?.walletAddress) {
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: { walletAddress },
+      });
+      res.sendStatus(200).json(updatedUser);
+    } else {
+      res.sendStatus(403).json(user);
+    }
+  }
+);
+
+const JETTON_MASTER_ADDRESS =
+  "EQBPC7kdLHl3zdqdOidPgO2AZDfl8stvtIoPQSw9uCyVEF3F";
+
+app.get(
+  "/me/wallet/",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    const id = res.locals.userId;
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (user?.walletAddress) {
+      try {
+        const jettonMasterAddress = Address.parse(JETTON_MASTER_ADDRESS);
+        const userAddress = Address.parse(user.walletAddress);
+        const jettonMaster = client.open(
+          JettonMaster.create(jettonMasterAddress)
+        );
+        const userJettonWalletAddress = await jettonMaster.getWalletAddress(
+          userAddress
+        );
+        const jettonWallet = client.open(
+          JettonWallet.create(userJettonWalletAddress)
+        );
+        const balance = await jettonWallet.getBalance();
+
+        const jetton = await axios
+          .get(
+            `https://toncenter.com/api/v2/getTokenData?address=${JETTON_MASTER_ADDRESS}`,
+            { method: "GET", headers: { "X-API-Key": TONCENTER_API_KEY } }
+          )
+          .then(async (res) => {
+            if (res.data) {
+              const data = res.data;
+              return data.result?.jetton_content?.data;
+            }
+            return {};
+          });
+        res.status(200).json({ balance: fromNano(balance).toString(), jetton });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+);
+
 const TELEGRAM_BOT_TOKEN = "7495100655:AAGqvHyW7uFRa1-cQ3mupJrkLRr750M7oU8";
 
 export function telegramAuthMiddleware(
@@ -560,12 +629,30 @@ export function telegramAuthMiddleware(
   // take initData from headers
   const initData = req.headers["telegram-data"] as string;
 
-  // use our helpers (see bellow) to validate string
-  // and get user from it
-  try {
-    validate(initData, TELEGRAM_BOT_TOKEN);
+  if (process.env.NODE_ENV !== "development") {
+    // use our helpers (see bellow) to validate string
+    // and get user from it
+    try {
+      validate(initData, TELEGRAM_BOT_TOKEN);
+      const parsedInitData = parse(new URLSearchParams(initData));
+      console.log(parsedInitData);
+      const user = parsedInitData.user;
+      if (user) {
+        res.locals.telegramUserId = user.id;
+        next();
+      } else {
+        res.writeHead(401, { "content-type": "application/json" });
+        res.write("unauthorized");
+        res.end();
+      }
+    } catch (err) {
+      console.log(err);
+      res.writeHead(401, { "content-type": "application/json" });
+      res.write(err);
+      res.end();
+    }
+  } else {
     const parsedInitData = parse(new URLSearchParams(initData));
-    console.log(parsedInitData);
     const user = parsedInitData.user;
     if (user) {
       res.locals.telegramUserId = user.id;
@@ -575,10 +662,5 @@ export function telegramAuthMiddleware(
       res.write("unauthorized");
       res.end();
     }
-  } catch (err) {
-    console.log(err);
-    res.writeHead(401, { "content-type": "application/json" });
-    res.write("unauthorized");
-    res.end();
   }
 }
