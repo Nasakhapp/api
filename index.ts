@@ -24,6 +24,7 @@ import {
 import axios from "axios";
 import { Contract } from "tonweb/dist/types/contract/contract";
 import TelegramBot from "node-telegram-bot-api";
+import { Telegraf } from "telegraf";
 
 dotenv.config();
 
@@ -49,7 +50,11 @@ const server = http.createServer(app);
 server.listen(4000, () => {
   console.log("Localhost running on 4000");
 });
-const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+
+bot.command("ping", (ctx) => {
+  ctx.reply("Kir");
+});
 
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
@@ -59,15 +64,6 @@ socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
   });
-  bot.onText(/ping/, (message) => {
-    bot.sendMessage(message.chat.id, "Kir");
-  });
-});
-bot.on("message", (msg) => {
-  const chatId = msg.chat.id;
-
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, "Received your message");
 });
 
 const Authorization = (
