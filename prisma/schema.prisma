@@ -17,6 +17,14 @@ model User {
   UserAsNajiRequests   Request[] @relation("naji")
   telegramUserId       String?   @unique
   walletAddress        String?   @unique
+  point                Int       @default(5)
+}
+
+model Level {
+  id   String @id @unique @default(cuid())
+  name String @unique
+  min  Int
+  max  Int
 }
 
 model Request {

@@ -215,6 +215,15 @@ app.get(
       },
     });
 
+    await prisma.user.update({
+      where: { id: updatedRequest.nasakh.id },
+      data: { point: { decrement: updatedRequest.amount } },
+    });
+    await prisma.user.update({
+      where: { id: updatedRequest.naji?.id },
+      data: { point: { increment: updatedRequest.amount } },
+    });
+
     socketServer.emit("remove-nasakh", { id: updatedRequest.id });
     socketServer.emit(userId, {});
     if (updatedRequest.naji?.id) socketServer.emit(updatedRequest.naji?.id, {});
@@ -275,39 +284,48 @@ app.post(
     const already = await prisma.request.count({
       where: { nasakhId: id, status: { in: ["BRINGING", "SEARCHING"] } },
     });
-    if (already === 0) {
-      const request = await prisma.request.create({
-        data: {
-          amount: req.body.amount,
-          lat: req.body.lat,
-          long: req.body.long,
-          status: "SEARCHING",
-          nasakh: { connect: { id } },
-        },
-        select: {
-          id: true,
-          amount: true,
-          lat: true,
-          long: true,
-          naji: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          nasakh: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          status: true,
-        },
-      });
-      socketServer.emit("add-nasakh", request);
-      socketServer.emit(id, { request, role: "NASAKH" });
+    const userPoint = await prisma.user.findUnique({
+      where: { id },
+      select: { point: true },
+    });
 
-      res.json(request);
+    if (already === 0) {
+      if (userPoint?.point && userPoint?.point > req.body.amount) {
+        const request = await prisma.request.create({
+          data: {
+            amount: req.body.amount,
+            lat: req.body.lat,
+            long: req.body.long,
+            status: "SEARCHING",
+            nasakh: { connect: { id } },
+          },
+          select: {
+            id: true,
+            amount: true,
+            lat: true,
+            long: true,
+            naji: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            nasakh: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            status: true,
+          },
+        });
+        socketServer.emit("add-nasakh", request);
+        socketServer.emit(id, { request, role: "NASAKH" });
+
+        res.json(request);
+      } else {
+        res.status(403).send({ error: "سوتون زیاد سیگار می خوای" });
+      }
     } else res.status(403).send({ error: "چند تا درخواست میدی خیلی نسخیا!" });
   }
 );
@@ -619,6 +637,19 @@ app.get(
   }
 );
 
+app.get(
+  "/me/level/",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    const id = res.locals.userId;
+    const user = await prisma.user.findUnique({ where: { id } });
+    const level = await prisma.level.findFirst({
+      where: { min: { lt: user?.point }, max: { gte: user?.point } },
+      select: { id: true, name: true, min: true, max: true },
+    });
+    res.status(200).json({ point: user?.point, level });
+  }
+);
 const TELEGRAM_BOT_TOKEN = "7495100655:AAGqvHyW7uFRa1-cQ3mupJrkLRr750M7oU8";
 
 export function telegramAuthMiddleware(
