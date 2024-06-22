@@ -63,6 +63,12 @@ socketServer.on("connection", (socket) => {
     bot.sendMessage(message.chat.id, "Kir");
   });
 });
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+
+  // send a message to the chat acknowledging receipt of their message
+  bot.sendMessage(chatId, "Received your message");
+});
 
 const Authorization = (
   req: express.Request,
