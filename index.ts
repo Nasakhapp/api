@@ -38,16 +38,15 @@ const client = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
   apiKey: TONCENTER_API_KEY,
 });
-const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+// const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
-const webhook = async () => {
-  return await bot.createWebhook({ domain: "https://nasakh.app" });
-};
+// const webhook = async () => {
+//   return await bot.createWebhook({ domain: "https://nasakh.app" });
+// };
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static("public"));
-app.use(webhook);
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
@@ -56,15 +55,6 @@ server.listen(4000, () => {
   console.log("Localhost running on 4000");
 });
 
-bot.command("ping", (ctx) => {
-  ctx.reply("Kir");
-});
-
-bot.launch({
-  webhook: {
-    domain: "nasakh.app",
-  },
-});
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
 });
