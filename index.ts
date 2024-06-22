@@ -23,7 +23,6 @@ import {
 
 import axios from "axios";
 import { Contract } from "tonweb/dist/types/contract/contract";
-import TelegramBot from "node-telegram-bot-api";
 import { Telegraf } from "telegraf";
 
 dotenv.config();
@@ -39,10 +38,16 @@ const client = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
   apiKey: TONCENTER_API_KEY,
 });
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+
+const webhook = async () => {
+  return await bot.createWebhook({ domain: "nasakh.app" });
+};
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static("public"));
+app.use(webhook);
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
@@ -50,7 +55,6 @@ const server = http.createServer(app);
 server.listen(4000, () => {
   console.log("Localhost running on 4000");
 });
-const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
 bot.command("ping", (ctx) => {
   ctx.reply("Kir");
