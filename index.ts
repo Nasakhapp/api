@@ -41,7 +41,7 @@ const client = new TonClient({
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
 const webhook = async () => {
-  return await bot.createWebhook({ domain: "nasakh.app" });
+  return await bot.createWebhook({ domain: "https://nasakh.app" });
 };
 
 app.use(cors({ origin: true, credentials: true }));
