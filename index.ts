@@ -60,6 +60,11 @@ bot.command("ping", (ctx) => {
   ctx.reply("Kir");
 });
 
+bot.launch({
+  webhook: {
+    domain: "nasakh.app",
+  },
+});
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
 });
