@@ -23,11 +23,15 @@ import {
 
 import axios from "axios";
 import { Contract } from "tonweb/dist/types/contract/contract";
+import TelegramBot from "node-telegram-bot-api";
 
 dotenv.config();
 
 const TONCENTER_API_KEY =
   "148a23f7c4228fb1d324bf59985cabf66d9f04adc4b9416ca7d45671bd9953a7";
+const TELEGRAM_BOT_TOKEN = "7495100655:AAGqvHyW7uFRa1-cQ3mupJrkLRr750M7oU8";
+const JETTON_MASTER_ADDRESS =
+  "EQBPC7kdLHl3zdqdOidPgO2AZDfl8stvtIoPQSw9uCyVEF3F";
 
 const app = express();
 const client = new TonClient({
@@ -45,6 +49,7 @@ const server = http.createServer(app);
 server.listen(4000, () => {
   console.log("Localhost running on 4000");
 });
+const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
@@ -53,6 +58,9 @@ const socketServer = new socketio.Server(server, {
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
+  });
+  bot.onText(/ping/, (message) => {
+    bot.sendMessage(message.chat.id, "Kir");
   });
 });
 
@@ -568,6 +576,7 @@ app.get(
           },
         },
         walletAddress: true,
+        telegramChatId: true,
       },
     });
     res.json(user);
@@ -593,8 +602,24 @@ app.put(
   }
 );
 
-const JETTON_MASTER_ADDRESS =
-  "EQBPC7kdLHl3zdqdOidPgO2AZDfl8stvtIoPQSw9uCyVEF3F";
+app.put(
+  "/me/telegram-chat-id",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    const id = res.locals.userId;
+    const telegramChatId = req.body.telegramChatId;
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user?.telegramChatId) {
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: { telegramChatId },
+      });
+      res.status(200).json(updatedUser);
+    } else {
+      res.status(403).json(user);
+    }
+  }
+);
 
 app.get(
   "/me/wallet/",
@@ -650,7 +675,6 @@ app.get(
     res.status(200).json({ point: user?.point, level });
   }
 );
-const TELEGRAM_BOT_TOKEN = "7495100655:AAGqvHyW7uFRa1-cQ3mupJrkLRr750M7oU8";
 
 export function telegramAuthMiddleware(
   req: express.Request,

@@ -18,6 +18,7 @@ model User {
   telegramUserId       String?   @unique
   walletAddress        String?   @unique
   point                Int       @default(5)
+  telegramChatId       String?   @unique
 }
 
 model Level {
