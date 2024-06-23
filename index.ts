@@ -25,6 +25,7 @@ import axios from "axios";
 import { Contract } from "tonweb/dist/types/contract/contract";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
+import measure from "./utils/distance";
 
 dotenv.config();
 
@@ -40,11 +41,7 @@ const client = new TonClient({
   apiKey: TONCENTER_API_KEY,
 });
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
-bot.command("ping", (ctx) => {
-  ctx.reply("Nasakhi?").catch((err) => {
-    console.log(err);
-  });
-});
+
 bot.telegram.setWebhook("https://nasakh.app/");
 
 app.use(cors({ origin: true, credentials: true }));
@@ -77,7 +74,28 @@ bot.on("location", (ctx) => {
   ctx.reply("الان دیگه کسی نخس باشه دورت میفهمی");
 });
 
-bot.on("edited_message", (ctx) => {});
+bot.on("edited_message", (ctx) => {
+  socketServer.on("add-nasakh", (request) => {
+    if (
+      request.lat &&
+      request.long &&
+      "location" in ctx.editedMessage &&
+      "latitude" in ctx.editedMessage.location &&
+      "longitude" in ctx.editedMessage.location
+    ) {
+      if (
+        measure(
+          request.lat,
+          request.long,
+          ctx.editedMessage.location.latitude,
+          ctx.editedMessage.location.longitude
+        ) < 300
+      ) {
+        console.log(request.nasakh.name);
+      }
+    }
+  });
+});
 
 const Authorization = (
   req: express.Request,
