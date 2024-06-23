@@ -58,15 +58,11 @@ const socketServer = new socketio.Server(server, {
 
 socketServer.on("connection", (socket) => {
   console.log(socket);
-  socket.on("naji-location", (data) => {
-    socketServer.emit(data.requestId, data.location);
-  });
+  // socket.on("naji-location", (data) => {
+  //   socketServer.emit(data.requestId, data.location);
+  // });
   socket.on("add-nasakh", (request) => {
     console.log(request);
-    socket.on("notification-owner", (notif) => {
-      // if (measure(notif.lat, notif.long, request.lat, request.long) < 300)
-      //   bot.telegram.sendMessage(notif.chatId, "یکی سیگار میخواد");
-    });
   });
 });
 bot.command("/notification", (ctx) => {
