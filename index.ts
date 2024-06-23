@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import socketio from "socket.io";
+import io from "socket.io";
 import prisma from "./db/prisma";
 import jwt from "jsonwebtoken";
 import cors from "cors";
@@ -52,8 +52,9 @@ app.use(bot.webhookCallback("/"));
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
-const socketServer = new socketio.Server(server, {
+const socketServer = new io.Server(server, {
   cors: { origin: "*" },
+  transports: ["websocket"],
 });
 
 socketServer.on("connection", (socket) => {
