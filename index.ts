@@ -66,6 +66,10 @@ socketServer.on("connection", (socket) => {
   //   socketServer.emit(data.requestId, data.location);
   // });
 });
+
+socketServer.on("connect_error", (err) => {
+  console.log(err);
+});
 bot.command("/notification", (ctx) => {
   ctx.reply(
     "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
