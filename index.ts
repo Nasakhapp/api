@@ -67,8 +67,9 @@ socketServer.on("connection", (socket) => {
   socket.on("notification-owner", (notif) => {
     if (notif.chatId) {
       socket.on("add-nasakh", (request) => {
-        if (measure(notif.lat, notif.long, request.lat, request.long) < 300)
-          bot.telegram.sendMessage(notif.chatId, "یکی سیگار میخواد");
+        console.log(request);
+        // if (measure(notif.lat, notif.long, request.lat, request.long) < 300)
+        //   bot.telegram.sendMessage(notif.chatId, "یکی سیگار میخواد");
       });
     }
   });
