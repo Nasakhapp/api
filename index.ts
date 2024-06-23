@@ -67,9 +67,19 @@ socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
   });
-  bot.on("text", (ctx) => {
-    ctx.reply("done").catch((err) => {});
-  });
+});
+bot.command("/notification", (ctx) => {
+  ctx.sendMessage(
+    "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
+  );
+});
+bot.on("location", (ctx) => {
+  ctx.reply("الان دیگه کسی نخس باشه دورت میفهمی");
+});
+
+bot.on("edited_message", (ctx) => {
+  if ("location" in ctx.update.edited_message)
+    console.log(ctx.update.edited_message.location);
 });
 
 const Authorization = (
