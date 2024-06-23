@@ -40,8 +40,8 @@ const client = new TonClient({
   apiKey: TONCENTER_API_KEY,
 });
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
-bot.on(message("text"), (ctx) => {
-  ctx.reply("Hello").catch((err) => {
+bot.command("ping", (ctx) => {
+  ctx.reply("Nasakhi?").catch((err) => {
     console.log(err);
   });
 });
@@ -66,6 +66,9 @@ const socketServer = new socketio.Server(server, {
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
+  });
+  bot.on("text", (ctx) => {
+    ctx.reply("done").catch((err) => {});
   });
 });
 
