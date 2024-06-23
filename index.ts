@@ -57,8 +57,8 @@ const socketServer = new socketio.Server(server, {
 });
 
 socketServer.on("connection", (socket) => {
-  socketServer.sockets.on("add-nasakh", (request) => {
-    console.log(request);
+  socket.onAny((event, req) => {
+    console.log(event);
   });
 });
 
