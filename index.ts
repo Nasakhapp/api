@@ -78,8 +78,7 @@ bot.on("location", (ctx) => {
 });
 
 bot.on("edited_message", (ctx) => {
-  if ("location" in ctx.update.edited_message)
-    console.log(ctx.update.edited_message.location);
+  if ("location" in ctx.editedMessage) console.log(ctx.editedMessage.location);
 });
 
 const Authorization = (
