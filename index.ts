@@ -69,7 +69,7 @@ socketServer.on("connection", (socket) => {
   });
 });
 bot.command("/notification", (ctx) => {
-  ctx.sendMessage(
+  ctx.reply(
     "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
   );
 });
