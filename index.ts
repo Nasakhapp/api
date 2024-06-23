@@ -24,6 +24,7 @@ import {
 import axios from "axios";
 import { Contract } from "tonweb/dist/types/contract/contract";
 import { Telegraf } from "telegraf";
+import { message } from "telegraf/filters";
 
 dotenv.config();
 
@@ -38,15 +39,20 @@ const client = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
   apiKey: TONCENTER_API_KEY,
 });
-// const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+bot.on(message("text"), (ctx) => {
+  console.log(ctx.message);
+  ctx.reply("Hello");
+});
 
-// const webhook = async () => {
-//   return await bot.createWebhook({ domain: "https://nasakh.app" });
-// };
+const webhook = async () => {
+  return await bot.createWebhook({ domain: "https://nasakh.app" });
+};
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static("public"));
+app.use(webhook);
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
