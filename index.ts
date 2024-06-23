@@ -52,10 +52,6 @@ app.use(bot.webhookCallback("/"));
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
-server.listen(4000, () => {
-  console.log("Localhost running on 4000");
-});
-
 const socketServer = new socketio.Server(server, {
   cors: { origin: "*" },
 });
@@ -750,3 +746,7 @@ export function telegramAuthMiddleware(
     }
   }
 }
+
+server.listen(4000, () => {
+  console.log("Localhost running on 4000");
+});
