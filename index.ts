@@ -44,15 +44,12 @@ bot.on(message("text"), (ctx) => {
   console.log(ctx.message);
   ctx.reply("Hello");
 });
-
-const webhook = async () => {
-  return await bot.createWebhook({ domain: "https://nasakh.app" });
-};
+bot.telegram.setWebhook("https://nasakh.app/");
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static("public"));
-app.use(webhook);
+app.use(bot.webhookCallback("/"));
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
