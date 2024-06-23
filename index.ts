@@ -77,9 +77,7 @@ bot.on("location", (ctx) => {
   ctx.reply("الان دیگه کسی نخس باشه دورت میفهمی");
 });
 
-bot.on("edited_message", (ctx) => {
-  if ("location" in ctx.editedMessage) console.log(ctx.editedMessage.location);
-});
+bot.on("edited_message", (ctx) => {});
 
 const Authorization = (
   req: express.Request,
