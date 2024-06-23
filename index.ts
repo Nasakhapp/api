@@ -75,7 +75,7 @@ bot.on("location", (ctx) => {
 });
 
 bot.on("edited_message", (ctx) => {
-  socketServer.on("add-nasakh", (request) => {
+  socketServer.once("add-nasakh", (request) => {
     console.log(request);
     // if (
     //   request.lat &&
