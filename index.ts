@@ -57,13 +57,14 @@ const socketServer = new socketio.Server(server, {
 });
 
 socketServer.on("connection", (socket) => {
-  console.log(socket);
+  if (socket.connected) {
+    socket.on("add-nasakh", (request) => {
+      console.log(request);
+    });
+  }
   // socket.on("naji-location", (data) => {
   //   socketServer.emit(data.requestId, data.location);
   // });
-  socket.on("add-nasakh", (request) => {
-    console.log(request);
-  });
 });
 bot.command("/notification", (ctx) => {
   ctx.reply(
