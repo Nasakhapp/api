@@ -58,8 +58,8 @@ const socketServer = new socketio.Server(server, {
 
 socketServer.on("connection", (socket) => {
   if (socket.connected) {
-    socket.on("add-nasakh", (request) => {
-      console.log(request);
+    socket.addListener("add-nasakh", (req) => {
+      console.log(req);
     });
   }
   // socket.on("naji-location", (data) => {
