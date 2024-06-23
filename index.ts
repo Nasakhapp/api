@@ -57,19 +57,12 @@ const socketServer = new socketio.Server(server, {
 });
 
 socketServer.on("connection", (socket) => {
-  if (socket.connected) {
-    socket.addListener("add-nasakh", (req) => {
-      console.log(req);
-    });
-  }
+  console.log(socket);
   // socket.on("naji-location", (data) => {
   //   socketServer.emit(data.requestId, data.location);
   // });
 });
 
-socketServer.on("connect_error", (err) => {
-  console.log(err);
-});
 bot.command("/notification", (ctx) => {
   ctx.reply(
     "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
