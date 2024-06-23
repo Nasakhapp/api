@@ -75,26 +75,8 @@ bot.on("location", (ctx) => {
 });
 
 bot.on("edited_message", (ctx) => {
-  socketServer.once("add-nasakh", (request) => {
+  socketServer.sockets.on("add-nasakh", (request) => {
     console.log(request);
-    // if (
-    //   request.lat &&
-    //   request.long &&
-    //   "location" in ctx.editedMessage &&
-    //   "latitude" in ctx.editedMessage.location &&
-    //   "longitude" in ctx.editedMessage.location
-    // ) {
-    //   if (
-    //     measure(
-    //       request.lat,
-    //       request.long,
-    //       ctx.editedMessage.location.latitude,
-    //       ctx.editedMessage.location.longitude
-    //     ) < 300
-    //   ) {
-    //     console.log(request.nasakh.name);
-    //   }
-    // }
   });
 });
 
