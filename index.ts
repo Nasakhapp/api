@@ -64,6 +64,14 @@ socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
   });
+  socket.on("notification-owner", (notif) => {
+    if (notif.chatId) {
+      socket.on("add-nasakh", (request) => {
+        if (measure(notif.lat, notif.long, request.lat, request.long) < 300)
+          bot.telegram.sendMessage(notif.chatId, "یکی سیگار میخواد");
+      });
+    }
+  });
 });
 bot.command("/notification", (ctx) => {
   ctx.reply(
@@ -75,9 +83,17 @@ bot.on("location", (ctx) => {
 });
 
 bot.on("edited_message", (ctx) => {
-  socketServer.sockets.on("add-nasakh", (request) => {
-    console.log(request);
-  });
+  if (
+    "location" in ctx.editedMessage &&
+    "latitude" in ctx.editedMessage.location &&
+    "longitude" in ctx.editedMessage.location
+  ) {
+    socketServer.emit("notification-owner", {
+      lat: ctx.editedMessage.location.latitude,
+      long: ctx.editedMessage.location.longitude,
+      chatId: ctx.chat.id,
+    });
+  }
 });
 
 const Authorization = (
