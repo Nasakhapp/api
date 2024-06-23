@@ -41,8 +41,9 @@ const client = new TonClient({
 });
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 bot.on(message("text"), (ctx) => {
-  console.log(ctx.message);
-  ctx.reply("Hello");
+  ctx.reply("Hello").catch((err) => {
+    console.log(err);
+  });
 });
 bot.telegram.setWebhook("https://nasakh.app/");
 
