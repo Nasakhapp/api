@@ -58,6 +58,7 @@ const socketServer = new io.Server(server, {
 });
 
 socketServer.on("connection", (socket) => {
+  console.log(socket);
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
   });
