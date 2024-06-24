@@ -59,6 +59,7 @@ const socketServer = new io.Server(server, {
 
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
+    console.log(data);
     socketServer.emit(data.requestId, data.location);
   });
   socket.on("add-nasakh", (req) => {
