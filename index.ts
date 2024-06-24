@@ -37,6 +37,9 @@ const TELEGRAM_BOT_TOKEN = "7495100655:AAGqvHyW7uFRa1-cQ3mupJrkLRr750M7oU8";
 const JETTON_MASTER_ADDRESS =
   "EQBPC7kdLHl3zdqdOidPgO2AZDfl8stvtIoPQSw9uCyVEF3F";
 const numCPUs = os.cpus().length;
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+
+bot.telegram.setWebhook("https://nasakh.app/");
 
 if (cluster.isPrimary) {
   console.log(`Master process ${process.pid} is running`);
@@ -55,9 +58,6 @@ if (cluster.isPrimary) {
     endpoint: "https://toncenter.com/api/v2/jsonRPC",
     apiKey: TONCENTER_API_KEY,
   });
-  const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
-
-  bot.telegram.setWebhook("https://nasakh.app/");
 
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
