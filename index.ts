@@ -205,6 +205,7 @@ app.get(
     });
 
     socketServer.emit("add-nasakh", updatedRequest);
+    socketServer.serverSideEmit("add-nasakh", updatedRequest);
     socketServer.emit(updatedRequest.nasakh.id, {
       request: updatedRequest,
       role: "NASAKH",
@@ -354,6 +355,7 @@ app.post(
           },
         });
         socketServer.emit("add-nasakh", request);
+        socketServer.serverSideEmit("add-nasakh", request);
         socketServer.emit(id, { request, role: "NASAKH" });
 
         res.json(request);
