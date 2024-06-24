@@ -66,14 +66,14 @@ socketServer.on("connection", (socket) => {
   });
 });
 
-emitter.on("add-nasakh", (req) => {
-  emitter.on("notification-owner", (no) => {
-    console.log(req);
-    console.log(no);
-    if (measure(req.lat, req.long, no.lat, no.long) < 300)
-      bot.telegram.sendMessage(no.chatId, "میو");
+emitter.on("notification-owner", (no) => {
+  emitter.on("add-nasakh", (req) => {
+    if (
+      measure(req.lat, req.long, no.lat, no.long) < 300 &&
+      req.nasakh.telegramChatId !== no.chatId
+    )
+      bot.telegram.sendMessage(no.chatId, `${req.nasakh.name} نزدیکته و نسخه!`);
   });
-  console.log(req);
 });
 
 bot.command("/notification", (ctx) => {
@@ -201,12 +201,14 @@ app.get(
           select: {
             id: true,
             name: true,
+            telegramChatId: true,
           },
         },
         nasakh: {
           select: {
             id: true,
             name: true,
+            telegramChatId: true,
           },
         },
         status: true,
@@ -352,12 +354,14 @@ app.post(
               select: {
                 id: true,
                 name: true,
+                telegramChatId: true,
               },
             },
             nasakh: {
               select: {
                 id: true,
                 name: true,
+                telegramChatId: true,
               },
             },
             status: true,
