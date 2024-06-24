@@ -61,6 +61,9 @@ socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
   });
+  socket.on("add-nasakh", (req) => {
+    console.log(req);
+  });
 });
 bot.command("/notification", (ctx) => {
   ctx.reply(
