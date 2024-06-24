@@ -26,6 +26,7 @@ import { Contract } from "tonweb/dist/types/contract/contract";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
 import measure from "./utils/distance";
+import EventEmitter from "events";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ const JETTON_MASTER_ADDRESS =
   "EQBPC7kdLHl3zdqdOidPgO2AZDfl8stvtIoPQSw9uCyVEF3F";
 
 const app = express();
+const emitter = new EventEmitter();
 const client = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
   apiKey: TONCENTER_API_KEY,
@@ -64,9 +66,10 @@ socketServer.on("connection", (socket) => {
   });
 });
 
-socketServer.on("add-nasakh", (req) => {
+emitter.on("add-nasakh", (req) => {
   console.log(req);
 });
+
 bot.command("/notification", (ctx) => {
   ctx.reply(
     "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
@@ -205,7 +208,7 @@ app.get(
     });
 
     socketServer.emit("add-nasakh", updatedRequest);
-    socketServer.serverSideEmit("add-nasakh", updatedRequest);
+    emitter.emit("add-nasakh", updatedRequest);
     socketServer.emit(updatedRequest.nasakh.id, {
       request: updatedRequest,
       role: "NASAKH",
@@ -355,7 +358,7 @@ app.post(
           },
         });
         socketServer.emit("add-nasakh", request);
-        socketServer.serverSideEmit("add-nasakh", request);
+        emitter.emit("add-nasakh", request);
         socketServer.emit(id, { request, role: "NASAKH" });
 
         res.json(request);
