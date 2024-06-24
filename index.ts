@@ -62,9 +62,10 @@ socketServer.on("connection", (socket) => {
     console.log(data);
     socketServer.emit(data.requestId, data.location);
   });
-  socket.on("add-nasakh", (req) => {
-    console.log(req);
-  });
+});
+
+socketServer.on("add-nasakh", (req) => {
+  console.log(req);
 });
 bot.command("/notification", (ctx) => {
   ctx.reply(
