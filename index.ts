@@ -67,6 +67,12 @@ socketServer.on("connection", (socket) => {
 });
 
 emitter.on("add-nasakh", (req) => {
+  emitter.on("notification-owner", (no) => {
+    console.log(req);
+    console.log(no);
+    if (measure(req.lat, req.long, no.lat, no.long) < 300)
+      bot.telegram.sendMessage(no.chatId, "میو");
+  });
   console.log(req);
 });
 
@@ -85,7 +91,7 @@ bot.on("edited_message", (ctx) => {
     "latitude" in ctx.editedMessage.location &&
     "longitude" in ctx.editedMessage.location
   ) {
-    socketServer.emit("notification-owner", {
+    emitter.emit("notification-owner", {
       lat: ctx.editedMessage.location.latitude,
       long: ctx.editedMessage.location.longitude,
       chatId: ctx.chat.id,
