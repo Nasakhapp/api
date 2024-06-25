@@ -78,7 +78,7 @@ emitter.on("add-nasakh", (req) => {
   });
 });
 
-bot.command("/notification", (ctx) => {
+bot.command("notification", (ctx) => {
   ctx.reply(
     "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
   );
