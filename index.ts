@@ -72,7 +72,10 @@ emitter.on("add-nasakh", (req) => {
       Number(req.nasakh.telegramChatId) !== no.chatId &&
       !notifSent
     ) {
-      bot.telegram.sendMessage(no.chatId, `${req.nasakh.name} نزدیکته و نسخه!`);
+      bot.telegram.sendMessage(
+        no.chatId,
+        `${req.nasakh.name} ${req.amount} نخ سیگار میخواد. نزدیکته حاجی بدجور هم نسخه.`
+      );
       notifSent = true;
     }
   });
