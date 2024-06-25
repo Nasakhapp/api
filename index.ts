@@ -65,13 +65,17 @@ socketServer.on("connection", (socket) => {
     socketServer.emit(data.requestId, data.location);
   });
 });
-emitter.on("notification-owner", (no) => {
-  emitter.on("add-nasakh", (req) => {
+emitter.on("add-nasakh", (req) => {
+  let notifSent = false;
+  emitter.on("notification-owner", (no) => {
     if (
       measure(req.lat, req.long, no.lat, no.long) < 300 &&
-      req.nasakh.telegramChatId !== no.chatId
-    )
+      Number(req.nasakh.telegramChatId) !== no.chatId &&
+      !notifSent
+    ) {
       bot.telegram.sendMessage(no.chatId, `${req.nasakh.name} نزدیکته و نسخه!`);
+      notifSent = true;
+    }
   });
 });
 
