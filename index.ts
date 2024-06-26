@@ -160,6 +160,7 @@ app.get(
             select: {
               id: true,
               name: true,
+              telegramChatId: true,
             },
           },
           status: true,
@@ -174,6 +175,10 @@ app.get(
         request: updatedRequest,
         role: "NAJI",
       });
+      bot.telegram.sendMessage(
+        Number(updatedRequest.nasakh.telegramChatId),
+        `${updatedRequest.naji?.name} داره میاد نجاتت بده`
+      );
 
       res.json(updatedRequest);
     } else {
