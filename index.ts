@@ -85,7 +85,11 @@ socketServer.on("connection", (socket) => {
         where: { socketId: { in: [socket.id, partnerSocket[0].socketId] } },
       });
     } else {
-      await prisma.waitingList.create({ data: { socketId: socket.id } });
+      const exist = await prisma.waitingList.count({
+        where: { socketId: socket.id },
+      });
+      if (!exist)
+        await prisma.waitingList.create({ data: { socketId: socket.id } });
     }
   });
   socket.on("end-match", async (partnerSocketId) => {
