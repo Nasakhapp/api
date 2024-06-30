@@ -61,7 +61,7 @@ const socketServer = new io.Server(server, {
   cors: { origin: "*" },
   transports: ["websocket"],
 });
-const peerServer = ExpressPeerServer(server, { path: "/" });
+const peerServer = ExpressPeerServer(server, { path: "/peerjs" });
 
 app.use("/peerjs", peerServer);
 
