@@ -61,9 +61,7 @@ const socketServer = new io.Server(server, {
   cors: { origin: "*" },
   transports: ["websocket"],
 });
-const peerServer = ExpressPeerServer(server, { path: "/" });
-
-app.use("/peerjs", peerServer);
+const peerServer = ExpressPeerServer(server);
 
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
