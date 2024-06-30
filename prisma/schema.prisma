@@ -28,6 +28,12 @@ model Level {
   max  Int
 }
 
+model WaitingList {
+  id String @id @unique @default(cuid())
+
+  socketId String
+}
+
 model Request {
   id       String        @id @unique @default(cuid())
   amount   Int

@@ -27,6 +27,7 @@ import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
 import measure from "./utils/distance";
 import EventEmitter from "events";
+import { ExpressPeerServer } from "peer";
 
 dotenv.config();
 
@@ -44,26 +45,62 @@ const client = new TonClient({
 });
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
-bot.telegram.setWebhook("https://nasakh.app/api/");
+if (process.env.NODE_ENV === "production")
+  bot.telegram.setWebhook("https://nasakh.app/api/");
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static("public"));
-app.use(bot.webhookCallback("/"));
+if (process.env.NODE_ENV === "production") app.use(bot.webhookCallback("/"));
 // var key = fs.readFileSync(__dirname + "/certs/selfsigned.key");
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
+const peerServer = ExpressPeerServer(server, { path: "/" });
+
+app.use("/peerjs", peerServer);
+
 const socketServer = new io.Server(server, {
   cors: { origin: "*" },
-  transports: ["websocket"],
 });
 
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
     socketServer.emit(data.requestId, data.location);
   });
+  socket.on("find-match", async () => {
+    socket.emit("matching");
+    const count = await prisma.waitingList.count({
+      where: { socketId: { not: socket.id } },
+    });
+    if (count > 0) {
+      const skip = Math.floor(Math.random() * count);
+      const partnerSocket = await prisma.waitingList.findMany({
+        skip,
+        take: 1,
+        where: { socketId: { not: socket.id } },
+      });
+      socketServer.to(socket.id).emit("matched", partnerSocket[0].socketId);
+      socketServer.to(partnerSocket[0].socketId).emit("matched", socket.id);
+      await prisma.waitingList.deleteMany({
+        where: { socketId: { in: [socket.id, partnerSocket[0].socketId] } },
+      });
+    } else {
+      await prisma.waitingList.create({ data: { socketId: socket.id } });
+    }
+  });
+  socket.on("end-match", async (partnerSocketId) => {
+    await prisma.waitingList.deleteMany({ where: { socketId: socket.id } });
+    if (partnerSocketId) {
+      socketServer.to(partnerSocketId).emit("match-ended");
+      socketServer.to(socket.id).emit("match-ended");
+    }
+  });
+  socket.on("disconnect", async (err) => {
+    await prisma.waitingList.deleteMany({ where: { socketId: socket.id } });
+  });
 });
+
 emitter.on("add-nasakh", (req) => {
   let notifSent = false;
   emitter.on("notification-owner", (no) => {
@@ -72,37 +109,39 @@ emitter.on("add-nasakh", (req) => {
       Number(req.nasakh.telegramChatId) !== no.chatId &&
       !notifSent
     ) {
-      bot.telegram.sendMessage(
-        no.chatId,
-        `${req.nasakh.name} ${req.amount} نخ سیگار میخواد. نزدیکته حاجی بدجور هم نسخه.`
-      );
+      if (process.env.NODE_ENV === "production")
+        bot.telegram.sendMessage(
+          no.chatId,
+          `${req.nasakh.name} ${req.amount} نخ سیگار میخواد. نزدیکته حاجی بدجور هم نسخه.`
+        );
       notifSent = true;
     }
   });
 });
-
-bot.command("notification", (ctx) => {
-  ctx.reply(
-    "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
-  );
-});
-bot.on("location", (ctx) => {
-  ctx.reply("الان دیگه کسی نخس باشه دورت میفهمی");
-});
-
-bot.on("edited_message", (ctx) => {
-  if (
-    "location" in ctx.editedMessage &&
-    "latitude" in ctx.editedMessage.location &&
-    "longitude" in ctx.editedMessage.location
-  ) {
-    emitter.emit("notification-owner", {
-      lat: ctx.editedMessage.location.latitude,
-      long: ctx.editedMessage.location.longitude,
-      chatId: ctx.chat.id,
-    });
-  }
-});
+if (process.env.NODE_ENV === "production")
+  bot.command("notification", (ctx) => {
+    ctx.reply(
+      "اگه می خوای در لحظه بدونی اطرافت کیا نسخ میشن لایو لوکیشنت رو بفرست برام"
+    );
+  });
+if (process.env.NODE_ENV === "production")
+  bot.on("location", (ctx) => {
+    ctx.reply("الان دیگه کسی نخس باشه دورت میفهمی");
+  });
+if (process.env.NODE_ENV === "production")
+  bot.on("edited_message", (ctx) => {
+    if (
+      "location" in ctx.editedMessage &&
+      "latitude" in ctx.editedMessage.location &&
+      "longitude" in ctx.editedMessage.location
+    ) {
+      emitter.emit("notification-owner", {
+        lat: ctx.editedMessage.location.latitude,
+        long: ctx.editedMessage.location.longitude,
+        chatId: ctx.chat.id,
+      });
+    }
+  });
 
 const Authorization = (
   req: express.Request,
@@ -175,12 +214,13 @@ app.get(
         request: updatedRequest,
         role: "NAJI",
       });
-      bot.telegram
-        .sendMessage(
-          Number(updatedRequest.nasakh.telegramChatId),
-          `${updatedRequest.naji?.name} داره میاد نجاتت بده`
-        )
-        .catch(() => {});
+      if (process.env.NODE_ENV === "production")
+        bot.telegram
+          .sendMessage(
+            Number(updatedRequest.nasakh.telegramChatId),
+            `${updatedRequest.naji?.name} داره میاد نجاتت بده`
+          )
+          .catch(() => {});
 
       res.json(updatedRequest);
     } else {
