@@ -22,12 +22,9 @@ import {
 } from "@ton/ton";
 
 import axios from "axios";
-import { Contract } from "tonweb/dist/types/contract/contract";
 import { Telegraf } from "telegraf";
-import { message } from "telegraf/filters";
 import measure from "./utils/distance";
 import EventEmitter from "events";
-import { ExpressPeerServer } from "peer";
 
 dotenv.config();
 
@@ -61,9 +58,6 @@ const socketServer = new io.Server(server, {
   cors: { origin: "*" },
   transports: ["websocket"],
 });
-const peerServer = ExpressPeerServer(server, { path: "/peerjs" });
-
-app.use("/peerjs", peerServer);
 
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
