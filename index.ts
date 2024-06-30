@@ -62,6 +62,7 @@ app.use("/peerjs", peerServer);
 
 const socketServer = new io.Server(server, {
   cors: { origin: "*" },
+  transports: ["websocket"],
 });
 
 socketServer.on("connection", (socket) => {

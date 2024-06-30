@@ -31,7 +31,7 @@ model Level {
 model WaitingList {
   id String @id @unique @default(cuid())
 
-  socketId String
+  socketId String @unique
 }
 
 model Request {
