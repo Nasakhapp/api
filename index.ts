@@ -57,6 +57,7 @@ if (process.env.NODE_ENV === "production") app.use(bot.webhookCallback("/"));
 
 const server = http.createServer(app);
 const peerServer = ExpressPeerServer(server);
+app.use("/peerjs", peerServer);
 
 const socketServer = new io.Server(server, {
   cors: { origin: "*" },
