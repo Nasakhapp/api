@@ -56,13 +56,14 @@ if (process.env.NODE_ENV === "production") app.use(bot.webhookCallback("/"));
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
-const peerServer = ExpressPeerServer(server, { path: "/" });
-app.use("/peerjs", peerServer);
 
 const socketServer = new io.Server(server, {
   cors: { origin: "*" },
   transports: ["websocket"],
 });
+const peerServer = ExpressPeerServer(server, { path: "/" });
+
+app.use("/peerjs", peerServer);
 
 socketServer.on("connection", (socket) => {
   socket.on("naji-location", (data) => {
