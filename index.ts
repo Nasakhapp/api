@@ -92,7 +92,7 @@ socketServer.on("connection", (socket) => {
     await prisma.waitingList.deleteMany({ where: { socketId: socket.id } });
     if (partnerSocketId) {
       socketServer.to(partnerSocketId).emit("match-ended");
-      socketServer.to(socket.id).emit("match-ended");
+      socket.emit("match-ended");
     }
   });
   socket.on("disconnect", async (err) => {
