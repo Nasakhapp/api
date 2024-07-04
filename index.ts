@@ -25,6 +25,7 @@ import axios from "axios";
 import { Telegraf } from "telegraf";
 import measure from "./utils/distance";
 import EventEmitter from "events";
+import { ExpressPeerServer } from "peer";
 
 dotenv.config();
 
@@ -53,6 +54,9 @@ if (process.env.NODE_ENV === "production") app.use(bot.webhookCallback("/"));
 // var cert = fs.readFileSync(__dirname + "/certs/selfsigned.crt");
 
 const server = http.createServer(app);
+const peerServer = ExpressPeerServer(server, { path: "/peerjs" });
+
+app.use("/peerjs", peerServer);
 
 const socketServer = new io.Server(server, {
   cors: { origin: "*" },
