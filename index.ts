@@ -479,6 +479,7 @@ app.post(
       select: {
         id: true,
         name: true,
+        telegramChatId: true,
         UserAsNajiRequests: {
           where: { status: "BRINGING" },
           select: {
@@ -558,6 +559,7 @@ app.post(
         select: {
           id: true,
           name: true,
+          telegramUserId: true,
           UserAsNajiRequests: {
             where: { status: "BRINGING" },
             select: {
@@ -765,6 +767,53 @@ app.get(
       select: { id: true, name: true, min: true, max: true },
     });
     res.status(200).json({ point: user?.point, level });
+  }
+);
+
+app.get(
+  "/letter",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    if (req.query.mode === "PUBLIC" || req.query.mode === "PRIVATE") {
+      const letters = await prisma.letter.findMany({
+        skip: Number(req.query.skip) || 0,
+        take: 20,
+        orderBy: { createdAt: "desc" },
+        where: {
+          mode: req.query.mode,
+          writerId:
+            req.query.mode === "PRIVATE" ? res.locals.userId : undefined,
+        },
+      });
+      res.status(200).json(letters);
+    } else res.status(400).json({ message: "چی میخوای؟" });
+  }
+);
+
+app.post(
+  "/letter",
+  Authorization,
+  async (req: express.Request, res: express.Response) => {
+    if (!req.body.title) {
+      res.status(400).json({ message: "عنوانو باید بفرستی" });
+    }
+    if (!req.body.body) {
+      res.status(400).json({ message: "متنو باید بفرستی" });
+    }
+    if (!req.body.mode) {
+      res.status(400).json({ message: "برا همه میخوای یا برا خودت؟" });
+    }
+    if (req.body.body && req.body.title && req.body.mode) {
+      const letter = await prisma.letter.create({
+        data: {
+          body: req.body.body,
+          title: req.body.title,
+          mode: req.body.mode,
+          writerId: res.locals.userId,
+        },
+      });
+      res.status(200).json(letter);
+    }
   }
 );
 

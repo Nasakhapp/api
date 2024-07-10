@@ -15,6 +15,7 @@ model User {
   name                 String?
   UserAsNasakhRequests Request[] @relation("nasakh")
   UserAsNajiRequests   Request[] @relation("naji")
+  UserLetters          Letter[]  @relation("writer")
   telegramUserId       String?   @unique
   walletAddress        String?   @unique
   point                Int       @default(5)
@@ -28,9 +29,18 @@ model Level {
   max  Int
 }
 
-model WaitingList {
-  id String @id @unique @default(cuid())
+model Letter {
+  id        String      @id @unique @default(cuid())
+  title     String
+  body      String
+  writer    User        @relation(fields: [writerId], references: [id], name: "writer")
+  writerId  String
+  createdAt DateTime    @default(now())
+  mode      LettersMode
+}
 
+model WaitingList {
+  id       String @id @unique @default(cuid())
   socketId String @unique
 }
 
@@ -61,4 +71,9 @@ enum RequestStatus {
   BRINGING
   DONE
   CANCELED
+}
+
+enum LettersMode {
+  PUBLIC
+  PRIVATE
 }
